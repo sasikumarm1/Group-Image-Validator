@@ -444,8 +444,9 @@ const ImageValidationCard = ({ img, index, onStatusChange, onNotesChange, onOrde
                                     type="number"
                                     value={row.value}
                                     onChange={(e) => onOrderChange(img.image_name, e.target.value === '' ? null : parseInt(e.target.value) || 0)}
-                                    placeholder="Enter order..."
-                                    className="bg-transparent border-none outline-none w-full font-mono placeholder-slate-400"
+                                    placeholder={img.status === 'Rejected' ? "N/A (Rejected)" : "Enter order..."}
+                                    disabled={img.status === 'Rejected'}
+                                    className={`bg-transparent border-none outline-none w-full font-mono placeholder-slate-400 ${img.status === 'Rejected' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 />
                             ) : row.isNotes ? (
                                 <input
