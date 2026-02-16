@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const API_BASE_URL = 'http://localhost:5000'; // Update if backend port changes
+
 const api = axios.create({
-    baseURL: 'http://localhost:5000', // Update if backend port changes
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },

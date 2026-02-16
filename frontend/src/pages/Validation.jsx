@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getSkus, getImagesBySku, updateImageStatus, exportExcel, exportApprovedExcel, resetSku } from '../lib/api';
+import { getSkus, getImagesBySku, updateImageStatus, exportExcel, exportApprovedExcel, resetSku, API_BASE_URL } from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronLeft, ChevronRight, Check, X, RotateCcw, Upload, LogOut, CheckCircle, AlertCircle, Download, RefreshCw, ZoomIn, Image, FileSpreadsheet } from 'lucide-react';
 
@@ -374,7 +374,7 @@ const Validation = () => {
                                 <X className="w-6 h-6" />
                             </button>
                             <img
-                                src={`http://localhost:8000${previewImage.path}`}
+                                src={`${API_BASE_URL}${previewImage.path}`}
                                 alt={previewImage.name}
                                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10"
                             />
@@ -472,7 +472,7 @@ const ImageValidationCard = ({ img, index, onStatusChange, onNotesChange, onOrde
                     {img.image_path ? (
                         <>
                             <img
-                                src={`http://localhost:8000${img.image_path}`}
+                                src={`${API_BASE_URL}${img.image_path}`}
                                 alt={img.image_name}
                                 className="max-w-full max-h-full object-contain p-2"
                             />
