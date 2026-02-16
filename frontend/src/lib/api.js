@@ -62,24 +62,28 @@ export const updateImageStatus = async (email, imageName, status, displayOrder, 
 };
 
 export const exportExcel = (email) => {
-    window.open(`http://localhost:5000/export/excel?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`${API_BASE_URL}/export/excel?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportZip = (email, sku_id) => {
-    window.open(`http://localhost:5000/export/zip/${sku_id}?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`${API_BASE_URL}/export/zip/${sku_id}?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportApprovedZip = (email) => {
-    window.open(`http://localhost:5000/export/approved-zip?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`${API_BASE_URL}/export/approved-zip?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportApprovedExcel = (email) => {
-    window.open(`http://localhost:5000/export/approved-excel?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`${API_BASE_URL}/export/approved-excel?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const resetSku = async (email, skuId) => {
     const response = await api.post('/validate/reset', { email, sku_id: skuId });
     return response.data;
+};
+
+export const downloadTemplate = () => {
+    window.open(`${API_BASE_URL}/upload/template`, '_blank');
 };
 
 export default api;

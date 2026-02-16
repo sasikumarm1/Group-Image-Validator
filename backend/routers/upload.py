@@ -7,7 +7,29 @@ from services.excel_parser import parse_excel
 from services.data import save_metadata, load_metadata, update_image_record
 from services.image import extract_technical_metadata
 
+from fastapi.responses import StreamingResponse
+import pandas as pd
+import io
+
 router = APIRouter(prefix="/upload", tags=["Upload"])
+
+@router.get("/template")
+async def get_template():
+    """Generate and serve a sample Excel template."""
+    df = pd.DataFrame(columns=['Image Provided By', 'Sku ID', 'Image Name'])
+    # Optional: Add an example row
+    # df.loc[0] = ['MFR Image', 'SKU123', 'SKU123_1.jpg']
+    
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Template')
+    
+    output.seek(0)
+    
+    headers = {
+        'Content-Disposition': 'attachment; filename="validation_template.xlsx"'
+    }
+    return StreamingResponse(output, headers=headers, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 @router.post("/excel")
 async def upload_excel(email: str = Form(...), file: UploadFile = File(...)):

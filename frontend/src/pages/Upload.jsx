@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { uploadExcel, uploadImages } from '../lib/api';
+import { uploadExcel, uploadImages, downloadTemplate } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload as UploadIcon, FileSpreadsheet, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, ArrowRight, X } from 'lucide-react';
+import { Upload as UploadIcon, FileSpreadsheet, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, ArrowRight, X, Download } from 'lucide-react';
 
 const Upload = () => {
     const { user } = useAuth();
@@ -72,9 +72,18 @@ const Upload = () => {
                                 New Project
                             </h1>
                         </div>
-                        <button onClick={() => navigate('/validate')} className="text-slate-500 hover:text-white transition-colors">
-                            <X className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => downloadTemplate()}
+                                className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 hover:border-blue-200 rounded-xl transition-all text-sm font-semibold shadow-sm"
+                            >
+                                <Download className="w-4 h-4" />
+                                Download Template
+                            </button>
+                            <button onClick={() => navigate('/validate')} className="text-slate-500 hover:text-white transition-colors">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
