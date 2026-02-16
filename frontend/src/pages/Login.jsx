@@ -113,7 +113,7 @@ const Login = () => {
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>
-                                    <span>Initialize Session</span>
+                                    <span>Login</span>
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
@@ -129,7 +129,7 @@ const Login = () => {
                         className="mt-8 pt-6 border-t border-slate-100 text-center"
                     >
                         <p className="text-xs text-slate-400 font-mono">
-                            SECURE CONNECTION • ANTIGRAVITY PROTOCOL v2.1
+                            Group Image Validator
                         </p>
                     </motion.div>
                 </div>

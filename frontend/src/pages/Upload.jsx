@@ -71,7 +71,6 @@ const Upload = () => {
                                 </span>
                                 New Project
                             </h1>
-                            <p className="text-slate-500 mt-2 text-lg">Initialize a new validation session</p>
                         </div>
                         <button onClick={() => navigate('/validate')} className="text-slate-500 hover:text-white transition-colors">
                             <X className="w-6 h-6" />
