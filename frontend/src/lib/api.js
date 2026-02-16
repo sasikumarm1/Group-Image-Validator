@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000', // Update if backend port changes
+    baseURL: 'http://localhost:5000', // Update if backend port changes
     headers: {
         'Content-Type': 'application/json',
     },
@@ -60,19 +60,19 @@ export const updateImageStatus = async (email, imageName, status, displayOrder, 
 };
 
 export const exportExcel = (email) => {
-    window.open(`http://localhost:8000/export/excel?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`http://localhost:5000/export/excel?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportZip = (email, sku_id) => {
-    window.open(`http://localhost:8000/export/zip/${sku_id}?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`http://localhost:5000/export/zip/${sku_id}?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportApprovedZip = (email) => {
-    window.open(`http://localhost:8000/export/approved-zip?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`http://localhost:5000/export/approved-zip?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const exportApprovedExcel = (email) => {
-    window.open(`http://localhost:8000/export/approved-excel?email=${encodeURIComponent(email)}`, '_blank');
+    window.open(`http://localhost:5000/export/approved-excel?email=${encodeURIComponent(email)}`, '_blank');
 };
 
 export const resetSku = async (email, skuId) => {
