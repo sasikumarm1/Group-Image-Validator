@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getSkus, getImagesBySku, updateImageStatus, exportExcel, exportApprovedExcel, resetSku, API_BASE_URL } from '../lib/api';
@@ -34,7 +34,7 @@ const Validation = () => {
         mfr: validImages.filter(img => img.image_provided_by && img.image_provided_by.toLowerCase().includes('mfr'))
     };
 
-    const prevPendingRef = React.useRef(null);
+    const prevPendingRef = useRef(null);
 
     // --- Auto-navigation logic ---
     useEffect(() => {
