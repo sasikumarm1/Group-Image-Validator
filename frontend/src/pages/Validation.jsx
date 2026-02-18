@@ -15,6 +15,44 @@ const Validation = () => {
     const [loadingImages, setLoadingImages] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
+    const [isAutoNavigating, setIsAutoNavigating] = useState(false);
+
+    // --- Derived State ---
+    const filteredSkus = skus.filter(s =>
+        s && s.sku_id && String(s.sku_id).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const validImages = images.filter(Boolean);
+    const stats = {
+        approved: validImages.filter(i => i.status === 'Approved').length,
+        rejected: validImages.filter(i => i.status === 'Rejected').length,
+        pending: validImages.filter(i => i.status !== 'Approved' && i.status !== 'Rejected').length
+    };
+
+    const groupedImages = {
+        client: validImages.filter(img => !img.image_provided_by || (img.image_provided_by && !img.image_provided_by.toLowerCase().includes('mfr'))),
+        mfr: validImages.filter(img => img.image_provided_by && img.image_provided_by.toLowerCase().includes('mfr'))
+    };
+
+    const prevPendingRef = React.useRef(null);
+
+    // --- Auto-navigation logic ---
+    useEffect(() => {
+        if (!loading && !loadingImages && stats.pending === 0 && prevPendingRef.current > 0 && images.length > 0 && !isAutoNavigating) {
+            const currentIndex = filteredSkus.findIndex(s => s.sku_id === selectedSku);
+            if (currentIndex !== -1 && currentIndex < filteredSkus.length - 1) {
+                setIsAutoNavigating(true);
+                const timer = setTimeout(() => {
+                    handleSkuSelect(filteredSkus[currentIndex + 1].sku_id);
+                    setIsAutoNavigating(false);
+                }, 800);
+                return () => clearTimeout(timer);
+            }
+        }
+        if (!loadingImages) {
+            prevPendingRef.current = stats.pending;
+        }
+    }, [stats.pending, loading, loadingImages, images.length, selectedSku, filteredSkus, isAutoNavigating]);
 
     // --- Initial Load ---
     useEffect(() => {
@@ -40,9 +78,20 @@ const Validation = () => {
     const handleSkuSelect = async (skuId) => {
         setSelectedSku(skuId);
         setLoadingImages(true);
+        prevPendingRef.current = null;
         try {
             const data = await getImagesBySku(user, skuId);
-            setImages(Array.isArray(data) ? data : []);
+            const processedData = (Array.isArray(data) ? data : []).map(img => {
+                // If display_order is missing, try to extract it from image name (e.g., DEEAT2_2.jpg -> 2)
+                if (img.display_order === null || img.display_order === undefined || img.display_order === '') {
+                    const match = img.image_name.match(/_(\d+)\./);
+                    if (match) {
+                        return { ...img, display_order: parseInt(match[1]) };
+                    }
+                }
+                return img;
+            });
+            setImages(processedData);
         } catch (error) {
             console.error("Failed to load images", error);
             setImages([]);
@@ -109,25 +158,6 @@ const Validation = () => {
     const handleLogout = () => {
         logout();
         navigate('/login');
-    };
-
-    // --- Filtering ---
-    const filteredSkus = skus.filter(s =>
-        s && s.sku_id && String(s.sku_id).toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Derived state for stats
-    const validImages = images.filter(Boolean);
-    const stats = {
-        approved: validImages.filter(i => i.status === 'Approved').length,
-        rejected: validImages.filter(i => i.status === 'Rejected').length,
-        pending: validImages.filter(i => i.status !== 'Approved' && i.status !== 'Rejected').length
-    };
-
-    // Group images by provider
-    const groupedImages = {
-        client: validImages.filter(img => !img.image_provided_by || (img.image_provided_by && !img.image_provided_by.toLowerCase().includes('mfr'))),
-        mfr: validImages.filter(img => img.image_provided_by && img.image_provided_by.toLowerCase().includes('mfr'))
     };
 
     return (
@@ -243,7 +273,7 @@ const Validation = () => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-8 pb-24 custom-scrollbar">
+                <div className="flex-1 overflow-hidden p-8">
                     {loadingImages ? (
                         <div className="flex flex-col items-center justify-center h-full text-slate-400">
                             <div className="relative w-16 h-16 mb-6">
@@ -253,30 +283,29 @@ const Validation = () => {
                             <p className="text-slate-600 animate-pulse text-xl font-heading font-medium tracking-wide">Loading Assets...</p>
                         </div>
                     ) : (
-                        <div className="max-w-[1700px] mx-auto space-y-10">
-
+                        <div className="max-w-[1700px] mx-auto h-full flex flex-col">
                             {/* Side-by-Side Layout Container */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start h-full overflow-hidden pb-4">
                                 {/* Manufacturer Images Section (Left) */}
                                 {groupedImages.mfr.length > 0 && (
-                                    <div className="space-y-5 lg:col-start-1">
-                                        <h2 className="text-base font-bold text-purple-600 uppercase tracking-widest flex items-center gap-3 font-heading pl-1">
+                                    <div className="flex flex-col h-full overflow-hidden">
+                                        <h2 className="text-base font-bold text-purple-600 uppercase tracking-widest flex items-center gap-3 font-heading pl-1 mb-5 shrink-0">
                                             <div className="w-8 h-[2px] bg-purple-500/30"></div>
                                             MRF IMAGES: {selectedSku}
                                             <div className="flex-1 h-[1px] bg-slate-200"></div>
                                         </h2>
-                                        <div className="grid grid-cols-1 gap-6">
+                                        <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-10">
                                             {groupedImages.mfr.map((img, index) => (
                                                 <ImageValidationCard
                                                     key={img.image_name}
                                                     img={img}
-                                                    index={index} // Start from 0 since it's the left column
+                                                    index={index}
                                                     onStatusChange={handleStatusChange}
                                                     onNotesChange={handleNotesChange}
                                                     providedBy="Mfr"
                                                     onOrderChange={handleOrderChange}
                                                     onPreview={(path, name) => setPreviewImage({ path, name, sku: selectedSku })}
-                                                    reverse={false} // Details on Left, Image on Right (New Sketch)
+                                                    reverse={false}
                                                 />
                                             ))}
                                         </div>
@@ -285,24 +314,24 @@ const Validation = () => {
 
                                 {/* Client Images Section (Right) */}
                                 {groupedImages.client.length > 0 && (
-                                    <div className="space-y-5 lg:col-start-2">
-                                        <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest flex items-center gap-3 font-heading pl-1">
+                                    <div className="flex flex-col h-full overflow-hidden">
+                                        <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest flex items-center gap-3 font-heading pl-1 mb-5 shrink-0">
                                             <div className="w-8 h-[2px] bg-blue-500/30"></div>
                                             CLIENT IMAGES: {selectedSku}
                                             <div className="flex-1 h-[1px] bg-slate-200"></div>
                                         </h2>
-                                        <div className="grid grid-cols-1 gap-6">
+                                        <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-10">
                                             {groupedImages.client.map((img, index) => (
                                                 <ImageValidationCard
                                                     key={img.image_name}
                                                     img={img}
-                                                    index={groupedImages.mfr.length + index} // Follow after MRF
+                                                    index={groupedImages.mfr.length + index}
                                                     onStatusChange={handleStatusChange}
                                                     onNotesChange={handleNotesChange}
                                                     providedBy="Client"
                                                     onOrderChange={handleOrderChange}
                                                     onPreview={(path, name) => setPreviewImage({ path, name, sku: selectedSku })}
-                                                    reverse={true} // Image on Left, Details on Right (New Sketch)
+                                                    reverse={true}
                                                 />
                                             ))}
                                         </div>
@@ -312,7 +341,7 @@ const Validation = () => {
 
                             {/* Empty State */}
                             {Object.values(groupedImages).every(g => g.length === 0) && (
-                                <div className="flex flex-col items-center justify-center h-80 text-slate-400 border border-dashed border-slate-300 rounded-3xl bg-white shadow-sm">
+                                <div className="flex flex-col items-center justify-center h-80 text-slate-400 border border-dashed border-slate-300 rounded-3xl bg-white shadow-sm mt-10">
                                     <div className="bg-slate-50 p-6 rounded-full mb-4 border border-slate-100">
                                         <Search className="w-10 h-10 text-slate-300" />
                                     </div>
@@ -325,7 +354,7 @@ const Validation = () => {
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="bg-white border-t border-slate-200 px-10 py-4 shrink-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex items-center justify-between">
+                <div className="bg-white border-t border-slate-200 px-12 py-6 shrink-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex items-center justify-between">
                     <button
                         onClick={() => {
                             const currentIndex = filteredSkus.findIndex(s => s.sku_id === selectedSku);
@@ -337,16 +366,18 @@ const Validation = () => {
                         <ChevronLeft className="w-5 h-5" /> Back
                     </button>
 
-                    <button
-                        onClick={() => {
-                            const currentIndex = filteredSkus.findIndex(s => s.sku_id === selectedSku);
-                            if (currentIndex < filteredSkus.length - 1) handleSkuSelect(filteredSkus[currentIndex + 1].sku_id);
-                        }}
-                        disabled={!selectedSku || filteredSkus.findIndex(s => s.sku_id === selectedSku) >= filteredSkus.length - 1}
-                        className="px-10 py-3 flex items-center gap-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-base shadow-md hover:shadow-lg active:scale-95"
-                    >
-                        Save & Next <ChevronRight className="w-5 h-5" />
-                    </button>
+                    {stats.pending === 0 && (
+                        <button
+                            onClick={() => {
+                                const currentIndex = filteredSkus.findIndex(s => s.sku_id === selectedSku);
+                                if (currentIndex < filteredSkus.length - 1) handleSkuSelect(filteredSkus[currentIndex + 1].sku_id);
+                            }}
+                            disabled={!selectedSku || filteredSkus.findIndex(s => s.sku_id === selectedSku) >= filteredSkus.length - 1}
+                            className="px-10 py-3 flex items-center gap-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-base shadow-md hover:shadow-lg active:scale-95 ml-auto"
+                        >
+                            Save & Next <ChevronRight className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -386,7 +417,7 @@ const Validation = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 
@@ -446,7 +477,7 @@ const ImageValidationCard = ({ img, index, onStatusChange, onNotesChange, onOrde
                                     onChange={(e) => onOrderChange(img.image_name, e.target.value === '' ? null : parseInt(e.target.value) || 0)}
                                     placeholder={img.status === 'Rejected' ? "N/A (Rejected)" : "Enter order..."}
                                     disabled={img.status === 'Rejected'}
-                                    className={`bg-transparent border-none outline-none w-full font-mono placeholder-slate-400 ${img.status === 'Rejected' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`bg-transparent border-none outline-none w-full font-mono placeholder-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${img.status === 'Rejected' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 />
                             ) : row.isNotes ? (
                                 <input
