@@ -82,8 +82,26 @@ export const resetSku = async (email, skuId) => {
     return response.data;
 };
 
-export const downloadTemplate = () => {
-    window.open(`${API_BASE_URL}/upload/template`, '_blank');
+export const processLocalPath = async (email, path, file = null) => {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('path', path);
+    if (file) {
+        formData.append('file', file);
+    }
+    const response = await api.post('/upload/local-path', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+export const exportLocalPathExcel = (email) => {
+    window.open(`${API_BASE_URL}/export/local-path-excel?email=${encodeURIComponent(email)}`, '_blank');
+};
+
+export const downloadTemplate = (mode = 'project') => {
+    window.open(`${API_BASE_URL}/upload/template?mode=${mode}`, '_blank');
 };
 
 export default api;
+

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Upload from './pages/Upload';
+import LocalPathUpload from './pages/LocalPathUpload';
 import Validation from './pages/Validation';
 
 const ProtectedRoute = ({ children }) => {
@@ -18,6 +19,11 @@ function AppRoutes() {
       <Route path="/upload" element={
         <ProtectedRoute>
           <Upload />
+        </ProtectedRoute>
+      } />
+      <Route path="/upload-local" element={
+        <ProtectedRoute>
+          <LocalPathUpload />
         </ProtectedRoute>
       } />
       <Route path="/validate" element={

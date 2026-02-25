@@ -8,6 +8,8 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
         "sku": "sku_id",
         "image name": "image_name",
         "file name": "image_name",
+        "image path and name": "full_path",
+        "image provided": "image_provided_by",
         "image provided by": "image_provided_by",
         "provider": "image_provided_by"
     }
@@ -33,12 +35,17 @@ def parse_excel(file_path: str) -> List[Dict[str, Any]]:
             
         df = normalize_columns(df)
         
-        # Ensure required columns exist
-        required = ["sku_id", "image_name"]
-        missing = [col for col in required if col not in df.columns]
-        
-        if missing:
-            raise ValueError(f"Missing required columns: {', '.join(missing)}")
+        # Ensure core columns exist - either image_name OR full_path
+        if "image_name" not in df.columns and "full_path" not in df.columns:
+            raise ValueError("Excel must contain either 'Image Name' or 'Image Path and Name' column.")
+            
+        if "sku_id" not in df.columns:
+            raise ValueError("Excel must contain 'Sku ID' column.")
+
+        # If image_name is missing but full_path is present, extract it
+        if "image_name" not in df.columns and "full_path" in df.columns:
+            import os
+            df["image_name"] = df["full_path"].apply(lambda x: os.path.basename(str(x)) if pd.notnull(x) else None)
             
         # Convert to records
         records = df.to_dict(orient="records")

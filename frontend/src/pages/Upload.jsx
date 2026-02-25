@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { uploadExcel, uploadImages, downloadTemplate } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload as UploadIcon, FileSpreadsheet, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, ArrowRight, X, Download } from 'lucide-react';
+import { Upload as UploadIcon, FileSpreadsheet, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, ArrowRight, X, Download, HardDrive } from 'lucide-react';
 
 const Upload = () => {
     const { user } = useAuth();
@@ -74,11 +74,17 @@ const Upload = () => {
                         </div>
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={() => downloadTemplate()}
+                                onClick={() => downloadTemplate('project')}
                                 className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 hover:border-blue-200 rounded-xl transition-all text-sm font-semibold shadow-sm"
                             >
-                                <Download className="w-4 h-4" />
                                 Download Template
+                            </button>
+                            <button
+                                onClick={() => navigate('/upload-local')}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-xl transition-all text-sm font-semibold shadow-sm"
+                            >
+                                <HardDrive className="w-4 h-4" />
+                                FTP Mode
                             </button>
                             <button onClick={() => navigate('/validate')} className="text-slate-500 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
@@ -108,7 +114,7 @@ const Upload = () => {
                             </div>
 
                             <p className={`font-medium text-lg transition-colors ${excelFile ? 'text-green-700' : 'text-slate-600 group-hover:text-slate-900'}`}>
-                                {excelFile ? excelFile.name : "Upload Metadata File"}
+                                {excelFile ? excelFile.name : "Upload Excel File"}
                             </p>
                             <p className="text-sm text-slate-400 mt-2 font-mono">Supported: .xlsx, .csv</p>
                         </div>

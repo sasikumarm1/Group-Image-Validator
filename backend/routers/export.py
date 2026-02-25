@@ -160,3 +160,40 @@ async def export_all_approved_zip(email: str):
                 added_files.add(img_name)
                 
     return FileResponse(zip_path, filename=zip_filename, media_type="application/zip")
+
+@router.get("/local-path-excel")
+async def export_local_path_excel(email: str):
+    """Generate and download Excel report for local path images."""
+    session_path = get_session_path(email)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    data = load_metadata(session_path)
+    if not data:
+        raise HTTPException(status_code=400, detail="No data to export")
+        
+    df = pd.DataFrame(data)
+    
+    # Filter/Order columns for the specifically requested template
+    # Mapping to requested headers: Image Provided, Sku ID, Image Path and Name
+    rename_map = {
+        "image_provided_by": "Image Provided",
+        "sku_id": "Sku ID",
+        "image_path": "Image Path and Name"
+    }
+    
+    # Ensure columns exist
+    for col in rename_map.keys():
+        if col not in df.columns:
+            df[col] = ""
+            
+    df_final = df[list(rename_map.keys())].rename(columns=rename_map)
+    
+    output_path = os.path.join(session_path, "Local_Path_Image_Export.xlsx")
+    df_final.to_excel(output_path, index=False)
+    
+    return FileResponse(
+        path=output_path, 
+        filename="Local_Path_Image_Export.xlsx", 
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )

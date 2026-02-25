@@ -405,7 +405,7 @@ const Validation = () => {
                                 <X className="w-6 h-6" />
                             </button>
                             <img
-                                src={`${API_BASE_URL}${previewImage.path}`}
+                                src={`${API_BASE_URL}/upload/local-image?path=${encodeURIComponent(previewImage.path)}`}
                                 alt={previewImage.name}
                                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10"
                             />
@@ -504,7 +504,7 @@ const ImageValidationCard = ({ img, index, onStatusChange, onNotesChange, onOrde
                     {img.image_path ? (
                         <>
                             <img
-                                src={`${API_BASE_URL}${img.image_path}`}
+                                src={`${API_BASE_URL}/upload/local-image?path=${encodeURIComponent(img.image_path)}`}
                                 alt={img.image_name}
                                 className="max-w-full max-h-full object-contain p-2"
                             />
