@@ -131,6 +131,10 @@ async def upload_local_path(
     if not email:
         raise HTTPException(status_code=400, detail="Email required")
     
+    print(f"Processing local path upload for {email}")
+    print(f"Path: {path}")
+    print(f"Excel file: {file.filename if file else 'None'}")
+    
     # Path is optional only if Excel is provided
     if not path and not file:
         raise HTTPException(status_code=400, detail="Either local directory path or Excel file is required.")

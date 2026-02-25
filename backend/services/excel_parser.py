@@ -44,8 +44,12 @@ def parse_excel(file_path: str) -> List[Dict[str, Any]]:
 
         # If image_name is missing but full_path is present, extract it
         if "image_name" not in df.columns and "full_path" in df.columns:
-            import os
-            df["image_name"] = df["full_path"].apply(lambda x: os.path.basename(str(x)) if pd.notnull(x) else None)
+            def get_basename(path_str):
+                if pd.isnull(path_str): return None
+                s = str(path_str)
+                # Handle both / and \
+                return s.replace('\\', '/').split('/')[-1]
+            df["image_name"] = df["full_path"].apply(get_basename)
             
         # Convert to records
         records = df.to_dict(orient="records")
