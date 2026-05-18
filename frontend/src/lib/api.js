@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_BASE_URL = `http://${window.location.hostname}:5000`; // Dynamically use the current host
+export const API_BASE_URL = `http://${window.location.hostname}:8008`; // Dynamically use the current host
 
 const api = axios.create({
     baseURL: API_BASE_URL,
